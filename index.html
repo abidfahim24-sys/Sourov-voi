@@ -1,0 +1,666 @@
+```html
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sourov the Protibadi | সৌরভ দি প্রতিবাদী</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Hind+Siliguri:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background: radial-gradient(circle at 50% 25%, #ffeaa7 0%, #fab1a0 50%, #ff7675 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .comic-font {
+      font-family: 'Fredoka One', 'Hind Siliguri', cursive, sans-serif;
+    }
+
+    .halftone-bg {
+      background-image: radial-gradient(#d63031 1.2px, transparent 1.2px), radial-gradient(#d63031 1.2px, #fff5e6 1.2px);
+      background-size: 22px 22px;
+      background-position: 0 0, 11px 11px;
+      opacity: 0.12;
+    }
+
+    /* Speech Bubble */
+    .speech-bubble {
+      position: relative;
+      background: #ffffff;
+      border: 4px solid #1e272e;
+      box-shadow: 5px 5px 0px #1e272e;
+      border-radius: 24px;
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 16px 14px 0;
+      border-style: solid;
+      border-color: #ffffff transparent;
+      display: block;
+      width: 0;
+    }
+
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 20px 17px 0;
+      border-style: solid;
+      border-color: #1e272e transparent;
+      display: block;
+      width: 0;
+    }
+
+    /* Comic Buttons */
+    .comic-btn {
+      transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 4px solid #1e272e;
+      box-shadow: 0px 7px 0px #1e272e;
+    }
+
+    .comic-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 9px 0px #1e272e;
+    }
+
+    .comic-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0px 3px 0px #1e272e;
+    }
+
+    /* Animations */
+    @keyframes angry-shake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-3px, 2px) rotate(-1.5deg); }
+      40% { transform: translate(3px, -2px) rotate(1.5deg); }
+      60% { transform: translate(-3px, -1px) rotate(-1deg); }
+      80% { transform: translate(3px, 1px) rotate(1deg); }
+    }
+
+    .shake-angry {
+      animation: angry-shake 0.35s infinite;
+    }
+
+    @keyframes dog-bark {
+      0% { transform: scale(1) translateY(0); }
+      35% { transform: scale(1.08, 0.92) translateY(-14px) rotate(-4deg); }
+      65% { transform: scale(0.96, 1.04) translateY(-2px) rotate(3deg); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    .dog-barking {
+      animation: dog-bark 0.38s ease-in-out;
+    }
+
+    @keyframes pop-bounce {
+      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      70% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .pop-in {
+      animation: pop-bounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    #fx-canvas {
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 30;
+    }
+  </style>
+</head>
+<body class="flex flex-col justify-between items-center text-gray-900 relative">
+
+  <!-- Comic Halftone Pattern Layer -->
+  <div class="halftone-bg fixed inset-0 pointer-events-none"></div>
+
+  <!-- Particle Visual Canvas -->
+  <canvas id="fx-canvas"></canvas>
+
+  <!-- Header Section -->
+  <header class="w-full max-w-xl px-4 pt-4 pb-2 z-20 flex justify-between items-center">
+    <div class="flex items-center gap-2 bg-white/95 px-3 py-1.5 rounded-full border-2 border-gray-900 shadow-[3px_3px_0px_#1e272e]">
+      <span class="text-xl">🔥</span>
+      <h1 class="text-base sm:text-lg font-black text-red-600 tracking-wide comic-font">
+        সৌরভ দি প্রতিবাদী
+      </h1>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Trap Counter -->
+      <div class="bg-amber-100 text-gray-900 font-bold px-3 py-1 rounded-full border-2 border-gray-900 shadow-[2px_2px_0px_#1e272e] text-xs sm:text-sm flex items-center gap-1.5">
+        <span>কুচো ট্র্যাপ:</span>
+        <span id="counter" class="text-red-600 font-extrabold text-base">0</span>
+      </div>
+
+      <!-- Mute Toggle -->
+      <button id="sound-btn" class="bg-white hover:bg-yellow-100 p-2 rounded-full border-2 border-gray-900 shadow-[2px_2px_0px_#1e272e] transition">
+        <span id="sound-icon-on" class="text-sm">🔊</span>
+        <span id="sound-icon-off" class="text-sm hidden">🔇</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive Arena -->
+  <main class="w-full max-w-md mx-auto flex-1 flex flex-col items-center justify-center px-4 relative z-20">
+
+    <!-- Comic Speech Dialogue Box -->
+    <div class="w-full mb-4 z-30">
+      <div id="speech-box" class="speech-bubble px-5 py-3 mx-auto text-center transition-all duration-200">
+        <p id="dialogue-text" class="text-base sm:text-lg font-black text-gray-900 leading-snug">
+          "আমাকে কুচো ডাকবেনা খবর করে দিব!" 😡💢
+        </p>
+      </div>
+    </div>
+
+    <!-- Character Representation Container -->
+    <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
+      <!-- Floor Shadow -->
+      <div class="absolute bottom-2 w-44 h-7 bg-black/25 rounded-full blur-[2px]"></div>
+
+      <!-- Form 1: Sourov (Human Protibadi Boy) -->
+      <div id="sourov-human" class="w-full h-full flex items-center justify-center cursor-pointer transition-all duration-200">
+        <svg class="w-full h-full drop-shadow-xl" viewBox="0 0 280 280" fill="none">
+          <!-- Anger Smoke Lines -->
+          <g class="shake-angry origin-center">
+            <path d="M68 65 L52 45 M58 72 L42 66" stroke="#d63031" stroke-width="4" stroke-linecap="round"/>
+            <path d="M212 65 L228 45 M222 72 L238 66" stroke="#d63031" stroke-width="4" stroke-linecap="round"/>
+            <path d="M178 52 Q188 52 188 42 M188 42 Q188 52 198 52 M198 52 Q188 52 188 62 M188 62 Q188 52 178 52" fill="none" stroke="#d63031" stroke-width="3.5" stroke-linecap="round"/>
+          </g>
+
+          <!-- Hair -->
+          <path d="M88 95 C75 50 110 30 140 30 C175 30 212 45 195 100 C185 70 160 60 140 60 C115 60 100 75 88 95 Z" fill="#2d3436" stroke="#1e272e" stroke-width="4"/>
+          <path d="M118 36 L128 14 L144 34 L160 16 L170 38" fill="#2d3436" stroke="#1e272e" stroke-width="3.5" stroke-linejoin="round"/>
+
+          <!-- Red Protest T-Shirt -->
+          <path d="M85 240 L95 180 Q140 195 185 180 L195 240 Z" fill="#e74c3c" stroke="#1e272e" stroke-width="4"/>
+          <path d="M120 183 Q140 195 160 183" stroke="#1e272e" stroke-width="4" fill="none"/>
+          <path d="M128 186 Q140 205 152 186" stroke="#f1c40f" stroke-width="3" fill="none"/>
+
+          <!-- Neck -->
+          <rect x="125" y="165" width="30" height="24" fill="#fbc531" stroke="#1e272e" stroke-width="4" rx="4"/>
+
+          <!-- Face -->
+          <rect x="95" y="75" width="90" height="95" rx="36" fill="#fbc531" stroke="#1e272e" stroke-width="4"/>
+
+          <!-- Ears -->
+          <circle cx="92" cy="120" r="12" fill="#fbc531" stroke="#1e272e" stroke-width="4"/>
+          <circle cx="188" cy="120" r="12" fill="#fbc531" stroke="#1e272e" stroke-width="4"/>
+
+          <!-- Angry Eyebrows -->
+          <path d="M106 106 L130 116" stroke="#1e272e" stroke-width="6" stroke-linecap="round"/>
+          <path d="M174 106 L150 116" stroke="#1e272e" stroke-width="6" stroke-linecap="round"/>
+
+          <!-- Eyes -->
+          <ellipse cx="118" cy="125" rx="10" ry="11" fill="#ffffff" stroke="#1e272e" stroke-width="3"/>
+          <circle cx="120" cy="124" r="5" fill="#1e272e"/>
+          <circle cx="122" cy="121" r="2" fill="#ffffff"/>
+
+          <ellipse cx="162" cy="125" rx="10" ry="11" fill="#ffffff" stroke="#1e272e" stroke-width="3"/>
+          <circle cx="160" cy="124" r="5" fill="#1e272e"/>
+          <circle cx="158" cy="121" r="2" fill="#ffffff"/>
+
+          <!-- Nose -->
+          <path d="M138 130 Q144 135 140 140" stroke="#1e272e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+          <!-- Screaming Open Mouth -->
+          <path d="M120 148 Q140 140 160 148 Q162 166 140 168 Q118 166 120 148 Z" fill="#b71540" stroke="#1e272e" stroke-width="3.5"/>
+          <path d="M128 147 L152 147" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="140" cy="164" r="8" fill="#e55039"/>
+
+          <!-- Fists in Protibad Motion -->
+          <g class="shake-angry origin-bottom">
+            <circle cx="70" cy="175" r="18" fill="#fbc531" stroke="#1e272e" stroke-width="4"/>
+            <path d="M60 170 Q70 162 80 170" stroke="#1e272e" stroke-width="3" fill="none"/>
+            <path d="M62 178 Q70 172 78 178" stroke="#1e272e" stroke-width="3" fill="none"/>
+          </g>
+          <g class="shake-angry origin-bottom">
+            <circle cx="210" cy="165" r="18" fill="#fbc531" stroke="#1e272e" stroke-width="4"/>
+            <path d="M200 160 Q210 152 220 160" stroke="#1e272e" stroke-width="3" fill="none"/>
+            <path d="M202 168 Q210 162 218 168" stroke="#1e272e" stroke-width="3" fill="none"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Form 2: Sourov transformed into Dog -->
+      <div id="sourov-dog" class="w-full h-full hidden items-center justify-center cursor-pointer transition-all duration-200">
+        <svg id="dog-svg" class="w-full h-full drop-shadow-xl" viewBox="0 0 280 280" fill="none">
+          <!-- Dog Tail -->
+          <g id="dog-tail" style="animation: angry-shake 0.2s infinite alternate;">
+            <path d="M200 180 Q235 160 235 130 Q225 125 210 155" fill="#e67e22" stroke="#1e272e" stroke-width="4"/>
+          </g>
+
+          <!-- Dog Body -->
+          <ellipse cx="140" cy="190" rx="65" ry="45" fill="#f39c12" stroke="#1e272e" stroke-width="4"/>
+          <ellipse cx="130" cy="195" rx="42" ry="28" fill="#fcecd2"/>
+
+          <!-- Paws -->
+          <ellipse cx="100" cy="225" rx="16" ry="12" fill="#f39c12" stroke="#1e272e" stroke-width="4"/>
+          <ellipse cx="170" cy="225" rx="16" ry="12" fill="#f39c12" stroke="#1e272e" stroke-width="4"/>
+
+          <!-- Red Collar with Sourov's Gold Medallion -->
+          <path d="M102 142 C115 155 155 155 168 142" stroke="#c0392b" stroke-width="10" stroke-linecap="round"/>
+          <circle cx="135" cy="154" r="8" fill="#f1c40f" stroke="#1e272e" stroke-width="2.5"/>
+
+          <!-- Dog Head (Moves during Barking) -->
+          <g id="dog-head-group">
+            <path d="M90 95 C75 90 60 120 70 145 C78 160 92 145 92 120 Z" fill="#d35400" stroke="#1e272e" stroke-width="4"/>
+            <path d="M185 95 C200 90 215 120 205 145 C197 160 183 145 183 120 Z" fill="#d35400" stroke="#1e272e" stroke-width="4"/>
+            <circle cx="137" cy="108" r="48" fill="#f39c12" stroke="#1e272e" stroke-width="4"/>
+            <ellipse cx="118" cy="98" rx="18" ry="16" fill="#e67e22"/>
+
+            <ellipse cx="118" cy="100" rx="9" ry="11" fill="#ffffff" stroke="#1e272e" stroke-width="3"/>
+            <circle cx="118" cy="100" r="5" fill="#1e272e"/>
+            <circle cx="120" cy="97" r="2" fill="#ffffff"/>
+
+            <ellipse cx="156" cy="100" rx="9" ry="11" fill="#ffffff" stroke="#1e272e" stroke-width="3"/>
+            <circle cx="156" cy="100" r="5" fill="#1e272e"/>
+            <circle cx="158" cy="97" r="2" fill="#ffffff"/>
+
+            <ellipse cx="137" cy="120" rx="24" ry="17" fill="#fcecd2" stroke="#1e272e" stroke-width="3.5"/>
+            <polygon points="137,118 130,111 144,111" fill="#1e272e"/>
+
+            <!-- Mouth & Tongue -->
+            <path id="dog-mouth" d="M126 126 Q137 132 148 126" stroke="#1e272e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path id="dog-tongue" d="M132 128 C132 142 142 142 142 128" fill="#ff7675" stroke="#1e272e" stroke-width="2.5"/>
+          </g>
+
+          <!-- Bark Sound Effect Waves -->
+          <g id="bark-waves" class="opacity-0 transition-opacity">
+            <path d="M188 85 Q210 95 200 120" stroke="#ff4757" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M202 75 Q230 90 216 130" stroke="#ff4757" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Controls Container -->
+    <div class="w-full mt-4 flex flex-col items-center justify-center min-h-[85px]">
+      <!-- Step 1 Button: "কুচো" -->
+      <button id="btn-kucho" class="comic-btn w-64 py-3.5 px-6 rounded-2xl bg-gradient-to-b from-yellow-300 via-amber-400 to-amber-500 text-gray-950 font-black text-2xl tracking-wider active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-lg">
+        <span>👉</span>
+        <span class="comic-font">কুচো</span>
+        <span>💥</span>
+      </button>
+
+      <!-- Step 2 Button: "বাংলা পানু" (Bounce Pop-up) -->
+      <button id="btn-panu" class="comic-btn hidden w-64 py-3.5 px-6 rounded-2xl bg-gradient-to-b from-emerald-400 via-green-500 to-green-600 text-white font-black text-2xl tracking-wider active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-lg pop-in">
+        <span>✨</span>
+        <span class="comic-font">বাংলা পানু</span>
+        <span>🌿</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Footer Notice -->
+  <footer class="w-full text-center py-4 px-4 z-20 text-xs text-gray-800 font-semibold">
+    <p class="bg-white/80 py-1 px-4 rounded-full inline-block border border-gray-900/40 shadow-sm">
+      সৌরভকে কুচো বললে সে কুকুর হয়ে ভক ভক শুরু করে! 🐶⚡
+    </p>
+  </footer>
+
+  <script>
+    // Web Audio Synthesizer (Instant playable sound FX without external assets)
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    const AudioEngine = {
+      pop() {
+        if (isSoundMuted) return;
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      },
+
+      poof() {
+        if (isSoundMuted) return;
+        initAudio();
+        // White noise burst for smoke explosion
+        const bufferSize = audioCtx.sampleRate * 0.25;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.07));
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(850, audioCtx.currentTime);
+        filter.frequency.linearRampToValueAtTime(140, audioCtx.currentTime + 0.25);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+
+        // Comic falling tone
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(85, audioCtx.currentTime + 0.28);
+        oscGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.28);
+        osc.connect(oscGain);
+        oscGain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.28);
+      },
+
+      bark(pitch = 280) {
+        if (isSoundMuted) return;
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 0.5, now + 0.15);
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(950, now);
+        filter.Q.setValueAtTime(2.2, now);
+
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.65, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.18);
+      },
+
+      sparkle() {
+        if (isSoundMuted) return;
+        initAudio();
+        const now = audioCtx.currentTime;
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.26);
+        });
+      }
+    };
+
+    // Canvas Particle Smoke & Star Bursts
+    const canvas = document.getElementById('fx-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y, type = 'smoke') {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed - 1;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.025 + 0.02;
+        this.size = type === 'smoke' ? Math.random() * 22 + 14 : Math.random() * 8 + 6;
+        this.color = type === 'smoke' 
+          ? ['#ffffff', '#f1f2f6', '#dfe4ea', '#ffa502'][Math.floor(Math.random() * 4)]
+          : ['#ffd32a', '#2ed573', '#ff4757', '#1e90ff'][Math.floor(Math.random() * 4)];
+        this.emoji = type === 'emoji' ? ['🦴', '🐶', '🐾', '✨', '💨'][Math.floor(Math.random() * 5)] : null;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.05;
+        this.life -= this.decay;
+        if (this.type === 'smoke') this.size += 0.35;
+      }
+
+      draw(c) {
+        c.save();
+        c.globalAlpha = Math.max(0, this.life);
+        if (this.emoji) {
+          c.font = `${Math.floor(this.size * 2)}px Arial`;
+          c.fillText(this.emoji, this.x, this.y);
+        } else {
+          c.fillStyle = this.color;
+          c.beginPath();
+          c.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      }
+    }
+
+    function createParticleBurst(x, y, isSparkle = false) {
+      for (let i = 0; i < 30; i++) {
+        const type = isSparkle 
+          ? (Math.random() > 0.4 ? 'sparkle' : 'emoji') 
+          : (Math.random() > 0.3 ? 'smoke' : 'emoji');
+        particles.push(new Particle(x, y, type));
+      }
+    }
+
+    function renderLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw(ctx);
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+    // Gameplay Logic
+    const speechBox = document.getElementById('speech-box');
+    const dialogueText = document.getElementById('dialogue-text');
+    const sourovHuman = document.getElementById('sourov-human');
+    const sourovDog = document.getElementById('sourov-dog');
+    const dogHeadGroup = document.getElementById('dog-head-group');
+    const barkWaves = document.getElementById('bark-waves');
+    const btnKucho = document.getElementById('btn-kucho');
+    const btnPanu = document.getElementById('btn-panu');
+    const counterEl = document.getElementById('counter');
+    const soundBtn = document.getElementById('sound-btn');
+    const soundIconOn = document.getElementById('sound-icon-on');
+    const soundIconOff = document.getElementById('sound-icon-off');
+
+    let trapCounter = 0;
+    let isDogMode = false;
+    let barkLoop = null;
+
+    const angryBengaliQuotes = [
+      "আমাকে কুচো ডাকবেনা খবর করে দিব! 😡💢",
+      "আবার কুচো ডাকলে খবর আছে সৌরভের! 😤👊",
+      "কুচো বললি কেন রে ভাই?! আমি প্রতিবাদী সৌরভ! 🛑🔥",
+      "একদম কুচো বলবি না! মেজাজ গরম হচ্ছে! 🤬⚡"
+    ];
+
+    const barkBengaliQuotes = [
+      "ভক ভক! ঘেউ ঘেউ! 🐶💢",
+      "ভউউউ! ভক ভক ভক! 🐾",
+      "ঘেউউউ! আমাকে আর কুচো ডাকিস না ভক! 🐶💥",
+      "ভক ভক! ঘেউ ঘেউ! বাউ ওয়াউ! 🦴"
+    ];
+
+    const recoveryBengaliQuotes = [
+      "যাহ্! বাংলা পানু খেয়ে বেঁচে গেলাম! 😮‍💨✨",
+      "আরেহ্! আমি তো মানুষ হয়ে গেলাম! আর কুচো ডাকবি না! 😤🔥",
+      "উফ্ শান্তি! অবশেষে মুক্তি পেলাম! 🙌💫"
+    ];
+
+    // Sound toggle
+    soundBtn.addEventListener('click', () => {
+      isSoundMuted = !isSoundMuted;
+      if (isSoundMuted) {
+        soundIconOn.classList.add('hidden');
+        soundIconOff.classList.remove('hidden');
+      } else {
+        soundIconOn.classList.remove('hidden');
+        soundIconOff.classList.add('hidden');
+        initAudio();
+      }
+    });
+
+    function triggerDogBark() {
+      if (!isDogMode) return;
+      AudioEngine.bark(260 + Math.random() * 80);
+      dialogueText.textContent = barkBengaliQuotes[Math.floor(Math.random() * barkBengaliQuotes.length)];
+      
+      dogHeadGroup.style.transform = 'translateY(-12px) rotate(-3deg)';
+      barkWaves.classList.remove('opacity-0');
+      barkWaves.classList.add('opacity-100');
+
+      setTimeout(() => {
+        dogHeadGroup.style.transform = 'translateY(0px) rotate(0deg)';
+        barkWaves.classList.remove('opacity-100');
+        barkWaves.classList.add('opacity-0');
+      }, 160);
+    }
+
+    // Step 1: Click "কুচো"
+    btnKucho.addEventListener('click', () => {
+      initAudio();
+      AudioEngine.pop();
+      AudioEngine.poof();
+
+      trapCounter++;
+      counterEl.textContent = trapCounter;
+
+      const rect = sourovHuman.getBoundingClientRect();
+      createParticleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, false);
+
+      // Hide Human, Show Dog
+      sourovHuman.classList.add('hidden');
+      sourovDog.classList.remove('hidden');
+      sourovDog.classList.add('flex');
+      isDogMode = true;
+
+      btnKucho.classList.add('hidden');
+
+      dialogueText.textContent = "ভক ভক! ঘেউ ঘেউ! 🐶🔥";
+
+      triggerDogBark();
+      setTimeout(triggerDogBark, 380);
+
+      if (barkLoop) clearInterval(barkLoop);
+      barkLoop = setInterval(triggerDogBark, 1400);
+
+      // Show "বাংলা পানু"
+      setTimeout(() => {
+        if (isDogMode) {
+          btnPanu.classList.remove('hidden');
+          btnPanu.classList.add('flex');
+          AudioEngine.pop();
+        }
+      }, 600);
+    });
+
+    // Step 2: Click "বাংলা পানু"
+    btnPanu.addEventListener('click', () => {
+      initAudio();
+      AudioEngine.pop();
+      AudioEngine.sparkle();
+
+      if (barkLoop) clearInterval(barkLoop);
+
+      const rect = sourovDog.getBoundingClientRect();
+      createParticleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, true);
+
+      // Hide Dog, Restore Human
+      sourovDog.classList.add('hidden');
+      sourovDog.classList.remove('flex');
+      sourovHuman.classList.remove('hidden');
+      isDogMode = false;
+
+      btnPanu.classList.add('hidden');
+      btnPanu.classList.remove('flex');
+      btnKucho.classList.remove('hidden');
+
+      dialogueText.textContent = recoveryBengaliQuotes[Math.floor(Math.random() * recoveryBengaliQuotes.length)];
+
+      setTimeout(() => {
+        if (!isDogMode) {
+          dialogueText.textContent = angryBengaliQuotes[Math.floor(Math.random() * angryBengaliQuotes.length)];
+        }
+      }, 2400);
+    });
+
+    // Direct Character Poke Easter Eggs
+    sourovHuman.addEventListener('click', () => {
+      AudioEngine.pop();
+      dialogueText.textContent = "গায়ে হাত দিবি না! খবর আছে বলে দিলাম! 😠";
+      sourovHuman.classList.add('shake-angry');
+      setTimeout(() => sourovHuman.classList.remove('shake-angry'), 400);
+    });
+
+    sourovDog.addEventListener('click', () => {
+      triggerDogBark();
+    });
+  </script>
+</body>
+</html>
+```
